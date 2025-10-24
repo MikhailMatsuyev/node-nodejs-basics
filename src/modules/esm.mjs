@@ -6,12 +6,12 @@ import { readFileSync } from 'node:fs';
 import './files/c.cjs';
 
 // Get __filename and __dirname equivalents in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const _filename = fileURLToPath(import.meta.url);
+const _dirname = path.dirname(_filename);
 
 const random = Math.random();
 
-// Load JSON files using readFileSync (pure ESM approach)
+// Load using readFileSync
 const unknownObject = random > 0.5
     ? JSON.parse(readFileSync(new URL('./files/a.json', import.meta.url), 'utf-8'))
     : JSON.parse(readFileSync(new URL('./files/b.json', import.meta.url), 'utf-8'));
@@ -20,8 +20,8 @@ console.log(`Release ${release()}`);
 console.log(`Version ${version()}`);
 console.log(`Path segment separator is "${path.sep}"`);
 
-console.log(`Path to current file is ${__filename}`);
-console.log(`Path to current directory is ${__dirname}`);
+console.log(`Path to current file is ${_filename}`);
+console.log(`Path to current directory is ${_dirname}`);
 
 const myServer = createServerHttp((_, res) => {
     res.end('Request accepted');

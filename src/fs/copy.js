@@ -6,52 +6,61 @@ const _filename = fileURLToPath(import.meta.url);
 const _dirname = path.dirname(_filename);
 
 const copy = async () => {
-    const srcToFiles = path.join(_dirname, 'files');
-    const destFilesCopy = path.join(_dirname, 'files_copy');
+    import fs from 'fs/promises';
+    import path from 'path';
+    import { fileURLToPath } from 'url';
 
-    try {
-        // Проверка существования исходной папки
-        await fs.access(srcToFiles);
+    const _filename = fileURLToPath(import.meta.url);
+    const _dirname = path.dirname(_filename);
 
-        // Проверка, существует ли уже папка назначения
+    const copy = async () => {
+        const srcToFiles = path.join(_dirname, 'files');
+        const destFilesCopy = path.join(_dirname, 'files_copy');
+
         try {
-            await fs.access(destFilesCopy);
-            throw new Error('FS operation failed');
-        } catch (error) {
-            // Если ошибка не связана с отсутствием папки, работаем дальше
-            if (error.message === 'FS operation failed') throw error;
+            // Проверка существования исходной папки
+            await fs.access(srcToFiles);
 
-            // Создаем основную папку
-            await fs.mkdir(destFilesCopy);
+            // Проверка, существует ли уже папка назначения
+            try {
+                await fs.access(destFilesCopy);
+                throw new Error('FS operation failed');
+            } catch (error) {
+                // Если ошибка не связана с отсутствием папки, работаем дальше
+                if (error.message === 'FS operation failed') throw error;
 
-            // Рекурсия-функция для копирования
-            const copyItems = async (currentSrc, currentDestination) => {
-                const items = await fs.readdir(currentSrc);
+                // Создаем основную папку
+                await fs.mkdir(destFilesCopy);
 
-                for (const item of items) {
-                    const srcPath = path.join(currentSrc, item);
-                    const destPath = path.join(currentDestination, item);
-                    const stat = await fs.stat(srcPath);
+                // Рекурсия-функция для копирования
+                const copyItems = async (currentSrc, currentDestination) => {
+                    const items = await fs.readdir(currentSrc);
 
-                    if (stat.isFile()) {
-                        // Копируем файл
-                        await fs.copyFile(srcPath, destPath);
-                    } else if (stat.isDirectory()) {
-                        // Создаем подпапку и копируем её контент
-                        await fs.mkdir(destPath);
-                        await copyItems(srcPath, destPath);
+                    for (const item of items) {
+                        const srcPath = path.join(currentSrc, item);
+                        const destPath = path.join(currentDestination, item);
+                        const stat = await fs.stat(srcPath);
+
+                        if (stat.isFile()) {
+                            // Копируем файл
+                            await fs.copyFile(srcPath, destPath);
+                        } else if (stat.isDirectory()) {
+                            // Создаем подпапку и копируем её контент
+                            await fs.mkdir(destPath);
+                            await copyItems(srcPath, destPath);
+                        }
                     }
-                }
-            };
+                };
 
-            // Стартуем копирование
-            await copyItems(srcToFiles, destFilesCopy);
+                // Стартуем копирование
+                await copyItems(srcToFiles, destFilesCopy);
+            }
+        } catch (error) {
+            if (error.message !== 'FS operation failed') {
+                throw new Error('FS operation failed');
+            }
+            throw error;
         }
-    } catch (error) {
-        if (error.message !== 'FS operation failed') {
-            throw new Error('FS operation failed');
-        }
-        throw error;
     }
 };
 
