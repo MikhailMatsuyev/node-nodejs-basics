@@ -2,20 +2,19 @@ import path from 'node:path';
 import { release, version } from 'node:os';
 import { createServer as createServerHttp } from 'node:http';
 import { fileURLToPath } from 'node:url';
-import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 import './files/c.cjs';
-
-// Создадим функцию для ESM контекста
-const require = createRequire(import.meta.url);
-
-const random = Math.random();
-
-// Dynamic imports for conditional JSON loading
-const unknownObject = random > 0.5 ? require('./files/a.json') : require('./files/b.json');
 
 // Get __filename and __dirname equivalents in ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const random = Math.random();
+
+// Load JSON files using readFileSync (pure ESM approach)
+const unknownObject = random > 0.5
+    ? JSON.parse(readFileSync(new URL('./files/a.json', import.meta.url), 'utf-8'))
+    : JSON.parse(readFileSync(new URL('./files/b.json', import.meta.url), 'utf-8'));
 
 console.log(`Release ${release()}`);
 console.log(`Version ${version()}`);
@@ -37,8 +36,5 @@ myServer.listen(PORT, () => {
     console.log('To terminate it, use Ctrl+C combination');
 });
 
-// Named exports
-export {
-    unknownObject,
-    myServer,
-};
+// ESM exports (replaces module.exports)
+export { unknownObject, myServer };
