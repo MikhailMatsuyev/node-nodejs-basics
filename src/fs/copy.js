@@ -1,5 +1,4 @@
-const copy = async () => {
-    import fs from 'fs/promises';
+ import fs from 'fs/promises';
     import path from 'path';
     import { fileURLToPath } from 'url';
 
@@ -54,7 +53,6 @@ const copy = async () => {
             }
             throw error;
         }
-    }
 };
 
 await copy();
